@@ -1,0 +1,10 @@
+const char *basicvs = "#version 430 core\n" 
+"layout (location = 0) in vec3 pos;\n" 
+"out vec3 col;\n" 
+"\n" 
+"void main()\n" 
+"{\n" 
+"    col = pos;\n" 
+"    gl_Position = vec4(pos, 1.0);\n" 
+"}\n" 
+;
