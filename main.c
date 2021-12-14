@@ -82,6 +82,7 @@ void initializeTexture(Texture *texture)
 {
     texture->data = stbi_load(texture->filepath, &(texture->width), &(texture->height), &(texture->nrChannels), 0);
     glGenTextures(1, &(texture->tex_id));
+    glActiveTexture(GL_TEXTURE0 + texture->tex_unit);
     glBindTexture(GL_TEXTURE_2D, texture->tex_id);
     if(!texture->data)
     {
@@ -167,19 +168,30 @@ void renderLoop(GLFWwindow* window)
         GL_UNSIGNED_BYTE,
         GL_RGB,
         GL_RGB,
-        "cat.jpg"
+        "cat.jpg",
+        0
     }; 
+    Uniform transform = {
+        0,
+        NULL
+    };
 
     VBO *vbos[] = {&basicVBOVerts, &basicVBOTex};
     Shader *shaders[] = {&basicVertexShader, &basicFragmentShader};
-    char *uniform_names[] = {};
-    int uniformc = 0;
+    char *uniform_names[] = {"transform"};
+    int uniformc = 1;
     Uniform *uniforms = malloc(uniformc * sizeof(Uniform));
     
     compileShaderProgram(&basicShaderProgram,  sizeof(shaders) / sizeof(shaders[0]), shaders, uniform_names, uniformc, uniforms);
     initializeTexture(&catTexture);
     initializeVAO(&basicVAO, sizeof(vbos) / sizeof(vbos[0]), vbos);
     glUseProgram(basicShaderProgram.program_id);
+
+    mat4 m;
+    // glmc_translate_make(m, (vec3){0.0f, 0.0f, 0.0f});
+    glm_rotate_make(m, 5.0f, (vec3){0.0f, 0.0f, 1.0f});
+    // glm_translate(m, (vec3){0.0f, 0.0f, 0.0f});
+    glUniformMatrix4fv(uniforms[0].uniform_location, 1, GL_FALSE, (float *)m);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -229,6 +241,8 @@ int initGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_set_flip_vertically_on_load(1);
 }
 int initGLFW()
 {

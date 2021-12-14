@@ -4,10 +4,11 @@ layout (location = 1) in vec2 uv;
 
 out vec3 col;
 out vec2 tex_uv;
+uniform mat4 transform;
 
 void main()
 {
     col = pos;
     tex_uv = uv;
-    gl_Position = vec4(pos, 1.0);
+    gl_Position = transform * vec4(pos, 1.0);
 }

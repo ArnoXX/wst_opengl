@@ -3,6 +3,7 @@
 #include "GLFW/glfw3.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "cglm/call.h"
 
 #include "basic.vs.h"
 #include "basic.fs.h"
@@ -50,6 +51,7 @@ typedef struct
     GLenum internal_format;
     GLenum format;
     char *filepath;
+    int tex_unit;
 } Texture;
 
 void process_input(GLFWwindow* window);
