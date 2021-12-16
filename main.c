@@ -188,15 +188,21 @@ void renderLoop(GLFWwindow* window)
     glUseProgram(basicShaderProgram.program_id);
 
     mat4 m;
-    // glmc_translate_make(m, (vec3){0.0f, 0.0f, 0.0f});
-    glm_rotate_make(m, 5.0f, (vec3){0.0f, 0.0f, 1.0f});
-    // glm_translate(m, (vec3){0.0f, 0.0f, 0.0f});
-    glUniformMatrix4fv(uniforms[0].uniform_location, 1, GL_FALSE, (float *)m);
+    
+    
 
     while(!glfwWindowShouldClose(window))
     {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT); 
+
+        float timeValue = glfwGetTime();
+        
+        glmc_mat4_identity(m);
+        glmc_translate(m, (vec3){0.0f, 0.0f, 0.0f});
+        glm_rotate(m, timeValue, (vec3){0.0f, 0.0f, 1.0f});
+        glUniformMatrix4fv(uniforms[0].uniform_location, 1, GL_FALSE, (float *)m);
+
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 

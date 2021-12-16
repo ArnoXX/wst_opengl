@@ -7,6 +7,6 @@ const char *basicfs = "#version 430 core\n"
 "\n" 
 "void main()\n" 
 "{\n" 
-"    FragColor = texture(ourTexture, tex_uv) * vec4(col, 1.0f);\n" 
+"    FragColor = texture(ourTexture, tex_uv);\n" 
 "}\n" 
 ;
