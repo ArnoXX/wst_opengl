@@ -188,8 +188,20 @@ void renderLoop(GLFWwindow* window)
     glUseProgram(basicShaderProgram.program_id);
 
     mat4 m;
+    glmc_mat4_identity(m);
+    glmc_translate(m, (vec3){0.0f, 0.0f, 0.0f});
+    glmc_rotate(m, glm_rad(45.0f), (vec3){1.0f, 0.0f, 0.0f});
+
+    mat4 v;
+    glmc_mat4_identity(v);
+    glmc_translate(v, (vec3){0.0, 0.0, -3.0f});
+
+    mat4 p;
+    glmc_mat4_identity(p);
+    glmc_perspective(glm_rad(9.0f), WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 100.0f, p);
     
-    
+    mat4 mvp;
+    glm_mat4_mulN((mat4 *[]){&p, &v, &m}, 3, mvp);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -198,10 +210,8 @@ void renderLoop(GLFWwindow* window)
 
         float timeValue = glfwGetTime();
         
-        glmc_mat4_identity(m);
-        glmc_translate(m, (vec3){0.0f, 0.0f, 0.0f});
-        glm_rotate(m, timeValue, (vec3){0.0f, 0.0f, 1.0f});
-        glUniformMatrix4fv(uniforms[0].uniform_location, 1, GL_FALSE, (float *)m);
+        
+        glUniformMatrix4fv(uniforms[0].uniform_location, 1, GL_FALSE, (float *)mvp);
 
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
