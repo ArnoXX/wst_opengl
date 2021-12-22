@@ -53,8 +53,15 @@ typedef struct
     char *filepath;
     int tex_unit;
 } Texture;
+typedef struct
+{
+    vec3 camPos;
+    vec3 camDir;
+    vec3 camUp;
+    float camSpeed, lastX, lastY, yaw, pitch;
+} InputState;
 
-void process_input(GLFWwindow* window);
+void process_input(GLFWwindow *window, InputState *state, float time_delta);
 void initializeVBO(VBO *vbo);
 void initializeVAO(VAO *vao, int vboc, VBO **vbos);
 void checkShaderPrCompile(unsigned int program);
@@ -66,4 +73,5 @@ int initGLFW();
 void compileShaderProgram(ShaderProgram *program, int shaderc, Shader **shaders, char **uniform_names, int uniformc, Uniform *uniforms);
 void checkShaderPrCompile(unsigned int program);
 void opengl_error_callback(GLenum source, GLenum type, GLint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 

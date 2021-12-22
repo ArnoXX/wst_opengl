@@ -114,6 +114,9 @@ void renderLoop(GLFWwindow* window)
         1.0f, 0.0f,
         0.0f, 0.0f
     };
+    float delta_time = 0.0f;
+    float last_frame = 0.0f;
+    float current_time = 0.0f;
 
     VBO basicVBOVerts = {
         GL_FLOAT, 
@@ -176,6 +179,19 @@ void renderLoop(GLFWwindow* window)
         NULL
     };
 
+    InputState state = {
+        {0.0f, 0.0f, 3.0f}, 
+        {0.0f, 0.0f, -1.0f},
+        {0.0f, 1.0f, 0.0f},
+        1.5f, 
+        640.0f, 
+        360.0f, 
+        -90.0f, 
+        0.0f
+    };
+
+    glfwSetWindowUserPointer(window, (void*)&state);
+
     VBO *vbos[] = {&basicVBOVerts, &basicVBOTex};
     Shader *shaders[] = {&basicVertexShader, &basicFragmentShader};
     char *uniform_names[] = {"transform"};
@@ -190,27 +206,28 @@ void renderLoop(GLFWwindow* window)
     mat4 m;
     glmc_mat4_identity(m);
     glmc_translate(m, (vec3){0.0f, 0.0f, 0.0f});
-    glmc_rotate(m, glm_rad(45.0f), (vec3){1.0f, 0.0f, 0.0f});
+    glmc_rotate(m, glm_rad(0.0f), (vec3){1.0f, 0.0f, 0.0f});
 
     mat4 v;
     glmc_mat4_identity(v);
-    glmc_translate(v, (vec3){0.0, 0.0, -3.0f});
+    glmc_look(state.camPos, state.camDir, state.camUp, v);
 
     mat4 p;
     glmc_mat4_identity(p);
-    glmc_perspective(glm_rad(9.0f), WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 100.0f, p);
+    glmc_perspective(glm_rad(45.0f), WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 100.0f, p);
     
     mat4 mvp;
     glm_mat4_mulN((mat4 *[]){&p, &v, &m}, 3, mvp);
 
     while(!glfwWindowShouldClose(window))
     {
+        
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT); 
 
-        float timeValue = glfwGetTime();
-        
-        
+        glmc_look(state.camPos, state.camDir, state.camUp, v);
+        glm_mat4_mulN((mat4 *[]){&p, &v, &m}, 3, mvp);
         glUniformMatrix4fv(uniforms[0].uniform_location, 1, GL_FALSE, (float *)mvp);
 
 
@@ -218,19 +235,64 @@ void renderLoop(GLFWwindow* window)
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-        process_input(window);
+
+        
+        current_time = glfwGetTime();
+        delta_time = current_time - last_frame;
+        last_frame = current_time;
+        process_input(window, &state, delta_time);
     }
     
 }
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    InputState *state = (InputState*)glfwGetWindowUserPointer(window);
+    float xoffset = xpos - state->lastX;
+    float yoffset = state->lastY - ypos;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+    state->lastX = xpos;
+    state->lastY = ypos;
+
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    state->yaw += xoffset;
+    state->pitch += yoffset;
+
+    if(state->pitch > 89.0f)
+        state->pitch = 89.0f;
+    if(state->pitch < -89.0f)
+        state->pitch = -89.0f;
+
+    state->camDir[0] = cos(glm_rad(state->yaw)) * cos(glm_rad(state->pitch));
+    state->camDir[1] = sin(glm_rad(state->pitch));
+    state->camDir[2] = sin(glm_rad(state->yaw)) * cos(glm_rad(state->pitch));   
+}
+
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-void process_input(GLFWwindow* window)
-{
-    
+void process_input(GLFWwindow *window, InputState *state, float time_delta)
+{   
+    vec3 inv_dir, right, inv_right;
+    float speed = state->camSpeed * time_delta;
+    glmc_vec3_negate_to(state->camDir, inv_dir);
+
+    glmc_vec3_cross(state->camDir, state->camUp, right);
+    glmc_vec3_normalize(right);
+    glmc_vec3_negate_to(right, inv_right);
+
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
+        glmc_vec3_muladds(state->camDir, speed, state->camPos);
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        glmc_vec3_muladds(inv_dir, speed, state->camPos);
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        glmc_vec3_muladds(inv_right, speed, state->camPos);
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        glmc_vec3_muladds(right, speed, state->camPos);
 }
 void APIENTRY opengl_error_callback(GLenum source, GLenum type, GLint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
@@ -282,6 +344,9 @@ int main()
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback); 
+    
     
 
     if(!initGL()) return 0;
