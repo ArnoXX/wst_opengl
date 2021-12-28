@@ -1,3 +1,4 @@
+#pragma once
 const char *basicvs = "#version 430 core\n" 
 "layout (location = 0) in vec3 pos;\n" 
 "layout (location = 1) in vec2 uv;\n" 

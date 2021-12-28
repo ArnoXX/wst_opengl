@@ -1,11 +1,20 @@
+CC = gcc
+LIBS = -lglfw3 -lgdi32 -lopengl32 -lcglm
+CFLAGS = -L./libs -I./src/includes
+TARGET = main
+SRC = ./src
+SHADERS_FOLDER = ./shaders
+SHADERS = basic.fs basic.vs plain.fs plain.vs pyramid.fs pyramid.vs
+UTILS = ./utils
+
+
 main: shaders bare
-	
-shaders:
-	python copy_contents_as_string.py basic.vs
-	python copy_contents_as_string.py basic.fs
+
+shaders: $(SHADERS)
+
+$(SHADERS):
+	python $(UTILS)/copy_contents_as_string.py $@
 
 bare:
-	gcc -o main main.c glad.c -I. -L. -lgdi32 -lglfw3dll -lcglm
+	$(CC) $(SRC)/*.c $(CFLAGS) $(LIBS) -o $(TARGET)
 
-test:
-	gcc -o test test.c glad.c -I. -L. -lgdi32 -lglfw3dll -lcglm

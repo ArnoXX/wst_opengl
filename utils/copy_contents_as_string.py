@@ -4,9 +4,9 @@
 # but python doesn't care anyway
 import sys
 # Open i/o files
-f_in = open( sys.argv[1], "r" )
+f_in = open( "./shaders/"+sys.argv[1], "r" )
 # Here we add ".h" extension
-f_out = open( f_in.name+".h", "w" )
+f_out = open("./src/includes/shaders/sources/"+sys.argv[1]+".h", "w" )
 print( "Input file: "+f_in.name )
 print( "Iutput file: "+f_out.name )
 
@@ -18,9 +18,10 @@ lines = f_in.readlines()
 # by splitting content of the filename string
 # (which includes file extension) to list of 2 elements
 # ( 1st is the name of the file and the 2nd one is its extension )
-variable_name = f_in.name.rsplit( '.', 1 )[0]
+variable_name = f_in.name.rsplit( '/', -1 )[-1].rsplit('.', -1)[0]
 
 # Write a "preamble"
+f_out.write("#pragma once\n")
 f_out.write( "const char *"+variable_name+sys.argv[1][-2:]+" = " )
 
 # For every line in the input file

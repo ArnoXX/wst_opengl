@@ -1,0 +1,16 @@
+#pragma once
+const char *pyramidvs = "#version 430 core\n" 
+"layout (location = 0) in vec3 pos;\n" 
+"layout (location = 1) in vec2 uv;\n" 
+"\n" 
+"out vec3 col;\n" 
+"out vec2 tex_uv;\n" 
+"uniform mat4 transform;\n" 
+"\n" 
+"void main()\n" 
+"{\n" 
+"    col = pos;\n" 
+"    tex_uv = uv;\n" 
+"    gl_Position = transform * vec4(pos, 1.0);\n" 
+"}\n" 
+;
