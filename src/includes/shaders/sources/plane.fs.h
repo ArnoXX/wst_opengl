@@ -1,5 +1,5 @@
 #pragma once
-const char *plainfs = "#version 430 core\n" 
+const char *planefs = "#version 430 core\n" 
 "out vec4 FragColor;\n" 
 "in vec3 col;\n" 
 "in vec2 tex_uv;\n" 

@@ -4,7 +4,7 @@ CFLAGS = -L./libs -I./src/includes
 TARGET = main
 SRC = ./src
 SHADERS_FOLDER = ./shaders
-SHADERS = basic.fs basic.vs plain.fs plain.vs pyramid.fs pyramid.vs
+SHADERS = basic.fs basic.vs plane.fs plane.vs pyramid.fs pyramid.vs
 UTILS = ./utils
 
 

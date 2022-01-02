@@ -25,7 +25,14 @@ void cube_init(Object *obj)
     obj->initialized = 1;
 }
 
-void cube_render(Object *obj)
+void cube_set_pos(Object *obj, float x, float y, float z)
+{
+    obj->pos[0] = x;
+    obj->pos[1] = y;
+    obj->pos[2] = z;
+}
+
+void cube_render(Object *obj, mat4 *v, mat4 *p)
 {
     glBindVertexArray(obj->vao_id);
     glUseProgram(obj->program_id);
@@ -35,12 +42,19 @@ void cube_render(Object *obj)
         glBindTexture(GL_TEXTURE_2D, obj->texture_ids[i]);
     }
 
+    mat4 m, mvp;
+    
+    cube_place(obj, m);
+
+    glm_mat4_mulN((mat4 *[]){p, v, &m}, 3, mvp);
+
+    cube_uniform_mat4f(obj, "transform", mvp);
+
     glDrawArrays(GL_TRIANGLES, 0, obj->vert_count);
 }
 
 void cube_uniform_mat4f(Object *obj, char* uniform_name, mat4 mat)
 {
-    glUseProgram(obj->program_id);
     glUniformMatrix4fv(glGetUniformLocation(obj->program_id, uniform_name), 1, GL_FALSE, mat[0]);
 }
 

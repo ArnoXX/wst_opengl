@@ -1,5 +1,5 @@
 #pragma once
-const char *plainvs = "#version 430 core\n" 
+const char *planevs = "#version 430 core\n" 
 "layout (location = 0) in vec3 pos;\n" 
 "layout (location = 1) in vec2 uv;\n" 
 "\n" 

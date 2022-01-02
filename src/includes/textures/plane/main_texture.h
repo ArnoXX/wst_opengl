@@ -2,7 +2,7 @@
 #include "../../glad/glad.h"
 #include "../../gl_objs.h"
 
-Texture cubeTexture = {
+Texture planeTexture = {
     0,
     0,
     0,

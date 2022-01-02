@@ -3,12 +3,13 @@
 #include "includes/main.h"
 
 #include "includes/gl_objs.h"
-#include "includes/objects/shapes/cube.h"
-#include "includes/objects/shapes/pyramid.h"
+#include "includes/objects/structures/map.h"
+#include "includes/objects/shapes/plane.h"
 
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
+#define FREE_CAM
 
 void error_callback(int code, char* description)
 {
@@ -17,23 +18,29 @@ void error_callback(int code, char* description)
 void renderLoop(GLFWwindow* window)
 {
     InputState state = {
-        {0.0f, 0.0f, 3.0f}, 
-        {0.0f, 0.0f, -1.0f},
+        {-10.0f, 20.0f, 10.0f}, 
+        {0.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
         1.5f, 
         640.0f, 
         360.0f, 
-        -90.0f, 
+        0.0f, 
         0.0f, 
         45.0f,
         1
     };
 
+
+    
+
+    glmc_vec3_sub(state.camDir, state.camPos, state.camDir);
+    glmc_vec3_normalize(state.camDir);
+
+    state.pitch = glm_deg(asin(state.camDir[1]));
+    state.yaw = glm_deg(asin(state.camDir[2]/cos(glm_rad(state.pitch))));
+
     glfwSetWindowUserPointer(window, (void*)&state);
 
-
-    mat4 m;
-    glmc_mat4_identity(m);
 
     mat4 v;
     glmc_mat4_identity(v);
@@ -41,26 +48,16 @@ void renderLoop(GLFWwindow* window)
     mat4 p;
     glmc_mat4_identity(p);
     
-    mat4 mvp;
 
-
-   
-    Object cube = {
-        .pos = {0.0f, 0.0f, 0.0f}
-    };
-    Object cube2 = {
-        .pos = {0.0f, 0.0f, 5.0f}
-    };
-
-    Object papich = {
-        .pos = {0.0f, 0.0f, 0.0f}
-    };
     float current_time, delta_time, last_frame;
 
-    cube_init(&cube);
-    cube_init(&cube2);
+    char map_data[2][2] = {{1, 1}, {0, 1}};
 
-    pyramid_init(&papich);
+    Map game_map = {
+        .w = 2,
+        .h = 2
+    };
+    map_init(&game_map, &map_data);
 
 
     while(!glfwWindowShouldClose(window))
@@ -74,35 +71,17 @@ void renderLoop(GLFWwindow* window)
 
         glmc_perspective(glm_rad(state.fov), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f, 100.0f, p);
 
-        cube_place(&cube, m);
-
-        glm_mat4_mulN((mat4 *[]){&p, &v, &m}, 3, mvp);
-
-
-        cube_uniform_mat4f(&cube, "transform", mvp);
-
-        // cube_render(&cube);
+        
+        map_render(&game_map, &v, &p);
 
 
-        cube_place(&cube2, m);
-
-        glm_mat4_mulN((mat4 *[]){&p, &v, &m}, 3, mvp);
-
-
-        cube_uniform_mat4f(&cube2, "transform", mvp);
-
-        // cube_render(&cube2);
-
-        pyramid_place(&papich, m);
-        glm_mat4_mulN((mat4 *[]){&p, &v, &m}, 3, mvp);
-        pyramid_uniform_mat4f(&papich, "transform", mvp);
-        pyramid_render(&papich);
+        current_time = glfwGetTime();
         
         glfwSwapBuffers(window);
         glfwPollEvents();
 
         
-        current_time = glfwGetTime();
+        
         delta_time = current_time - last_frame;
         last_frame = current_time;
         process_input(window, &state, delta_time);
@@ -110,7 +89,9 @@ void renderLoop(GLFWwindow* window)
     
 }
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
+{ 
+    #ifdef FREE_CAM
+
     InputState *state = (InputState*)glfwGetWindowUserPointer(window);
     if(state->firstMouse)
     {
@@ -139,7 +120,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     state->camDir[0] = cos(glm_rad(state->yaw)) * cos(glm_rad(state->pitch));
     state->camDir[1] = sin(glm_rad(state->pitch));
-    state->camDir[2] = sin(glm_rad(state->yaw)) * cos(glm_rad(state->pitch));   
+    state->camDir[2] = sin(glm_rad(state->yaw)) * cos(glm_rad(state->pitch));  
+
+    #else
+
+    #endif 
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -164,6 +149,8 @@ void process_input(GLFWwindow *window, InputState *state, float time_delta)
     glmc_vec3_normalize(right);
     glmc_vec3_negate_to(right, inv_right);
 
+    #ifdef FREE_CAM
+
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
         glmc_vec3_muladds(state->camDir, speed, state->camPos);
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -172,6 +159,10 @@ void process_input(GLFWwindow *window, InputState *state, float time_delta)
         glmc_vec3_muladds(inv_right, speed, state->camPos);
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         glmc_vec3_muladds(right, speed, state->camPos);
+    // printf("%f %f\n", state->pitch, state->yaw);
+    #else
+
+    #endif
 }
 void APIENTRY opengl_error_callback(GLenum source, GLenum type, GLint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
